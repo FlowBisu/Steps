@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StepMaster - Daily Step Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --secondary: #2196F3;
+            --background: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #F44336;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode {
+            --primary: #66BB6A;
+            --primary-dark: #388E3C;
+            --secondary: #64B5F6;
+            --background: #121212;
+            --card-bg: #1e1e1e;
+            --text: #e0e0e0;
+            --text-light: #aaaaaa;
+            --border: #333333;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2rem;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px var(--shadow);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .stat-card i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Today's Goal Card */
+        .today-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .goal-check {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            border: 3px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .goal-check {
+            background: #2a2a2a;
+        }
+
+        .goal-check.checked {
+            background: var(--primary);
+            border-color: var(--primary-dark);
+        }
+
+        .goal-check i {
+            font-size: 3rem;
+            color: #ccc;
+        }
+
+        .goal-check.checked i {
+            color: white;
+        }
+
+        .goal-check:hover {
+            transform: scale(1.05);
+        }
+
+        .today-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .today-card p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .goal-status {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+
+        .goal-met {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+
+        .goal-not-met {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+
+        /* Calendar Styles */
+        .calendar {
+            margin-top: 30px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-nav button {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--card-bg);
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        .calendar-day.completed {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--secondary);
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+
+        .calendar-day.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .calendar-day .day-number {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .calendar-day.completed i {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* Add Day Form */
+        .add-day-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .add-day-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .add-day-form button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        .add-day-form button:hover {
+            background: #1976D2;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        .entries-list {
+            margin-top: 30px;
+        }
+
+        .entry-header {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            padding: 15px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .entry-item {
+            display: grid;
+            grid-template-columns: 1fr 100px;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .entry-item:nth-child(even) {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .dark-mode .entry-item:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .actions button {
+            padding: 6px 10px;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--border);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-day-header, 
+            .calendar-day {
+                font-size: 0.8rem;
+            }
+            
+            .calendar-day .day-number {
+                font-size: 0.9rem;
+            }
+            
+            .entry-header, .entry-item {
+                grid-template-columns: 1fr auto;
+            }
+            
+            .add-day-form {
+                flex-direction: column;
+            }
+        }
+        
+        /* Animation for stats update */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .stat-card .value.updated {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-shoe-prints"></i>
+                <h1>Step<span>Master</span></h1>
+            </div>
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="card today-card">
+                <div class="goal-check" id="todayCheckbox">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h3>Today's Goal</h3>
+                <p>Mark when you complete 10,000 steps</p>
+                <div class="goal-status" id="todayStatus">Not Completed</div>
+            </div>
+
+            <div class="card">
+                <h2 class="card-title"><i class="fas fa-chart-line"></i> Progress Summary</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <div class="value" id="daysMet">0</div>
+                        <div class="label">Days Goal Met</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-fire"></i>
+                        <div class="value" id="currentStreak">0</div>
+                        <div class="label">Current Streak</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-trophy"></i>
+                        <div class="value" id="completionRate">0%</div>
+                        <div class="label">Completion Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card calendar">
+            <div class="calendar-header">
+                <h2 class="card-title"><i class="fas fa-calendar-alt"></i> Step Calendar</h2>
+                <div class="calendar-nav">
+                    <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                    <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarHeader">
+                <div class="calendar-day-header">Sun</div>
+                <div class="calendar-day-header">Mon</div>
+                <div class="calendar-day-header">Tue</div>
+                <div class="calendar-day-header">Wed</div>
+                <div class="calendar-day-header">Thu</div>
+                <div class="calendar-day-header">Fri</div>
+                <div class="calendar-day-header">Sat</div>
+            </div>
+            <div class="calendar-grid" id="calendarDays"></div>
+            
+            <div class="add-day-form">
+                <input type="date" id="markDate" placeholder="Select date to mark">
+                <button id="markDayBtn"><i class="fas fa-plus"></i> Mark as Complete</button>
+            </div>
+        </div>
+
+        <div class="card entries-list">
+            <h2 class="card-title"><i class="fas fa-history"></i> Completed Days</h2>
+            <div class="entry-header">
+                <div>Date</div>
+                <div>Actions</div>
+            </div>
+            <div id="entriesContainer">
+                <div class="empty-state">
+                    <i class="fas fa-walking"></i>
+                    <p>No completed days yet. Mark your first day to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>StepMaster Tracker - Helping you achieve 10,000 steps every day</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const todayCheckbox = document.getElementById('todayCheckbox');
+        const todayStatus = document.getElementById('todayStatus');
+        const markDate = document.getElementById('markDate');
+        const markDayBtn = document.getElementById('markDayBtn');
+        const entriesContainer = document.getElementById('entriesContainer');
+        const daysMet = document.getElementById('daysMet');
+        const currentStreak = document.getElementById('currentStreak');
+        const completionRate = document.getElementById('completionRate');
+        const calendarDays = document.getElementById('calendarDays');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+
+        // Initialize entries from localStorage
+        let entries = JSON.parse(localStorage.getItem('stepEntries')) || [];
+        
+        // Current date
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+        
+        // Calendar state
+        let currentMonth = today.getMonth();
+        let currentYear = today.getFullYear();
+        
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeToggle.innerHTML = isDarkMode 
+                ? '<i class="fas fa-sun"></i><span>Light Mode</span>' 
+                : '<i class="fas fa-moon"></i><span>Dark Mode</span>';
+            localStorage.setItem('darkMode', isDarkMode);
+        });
+
+        // Check for saved theme preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i><span>Light Mode</span>';
+        }
+
+        // Today's goal checkbox
+        todayCheckbox.addEventListener('click', () => {
+            const isCompleted = todayCheckbox.classList.contains('checked');
+            
+            if (isCompleted) {
+                removeEntry(todayStr);
+            } else {
+                addEntry(todayStr);
+            }
+            
+            updateTodayStatus();
+            renderEntries();
+            renderCalendar();
+            updateStats();
+        });
+
+        // Mark day button
+        markDayBtn.addEventListener('click', () => {
+            if (!markDate.value) {
+                alert('Please select a date');
+                return;
+            }
+            
+            const selectedDate = markDate.value;
+            
+            if (entries.includes(selectedDate)) {
+                if (confirm('This day is already marked. Do you want to unmark it?')) {
+                    removeEntry(selectedDate);
+                }
+            } else {
+                addEntry(selectedDate);
+            }
+            
+            markDate.value = '';
+            renderEntries();
+            renderCalendar();
+            updateStats();
+            updateTodayStatus();
+        });
+
+        // Calendar navigation
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        });
+
+        // Add entry
+        function addEntry(date) {
+            if (!entries.includes(date)) {
+                entries.push(date);
+                saveEntries();
+                return true;
+            }
+            return false;
+        }
+
+        // Remove entry
+        function removeEntry(date) {
+            const index = entries.indexOf(date);
+            if (index !== -1) {
+                entries.splice(index, 1);
+                saveEntries();
+                return true;
+            }
+            return false;
+        }
+
+        // Save entries to localStorage
+        function saveEntries() {
+            localStorage.setItem('stepEntries', JSON.stringify(entries));
+        }
+
+        // Update today's status
+        function updateTodayStatus() {
+            const isCompleted = entries.includes(todayStr);
+            
+            todayCheckbox.classList.toggle('checked', isCompleted);
+            todayStatus.textContent = isCompleted ? 'Completed!' : 'Not Completed';
+            todayStatus.className = isCompleted ? 'goal-status goal-met' : 'goal-status goal-not-met';
+        }
+
+        // Render entries list
+        function renderEntries() {
+            if (entries.length === 0) {
+                entriesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-walking"></i>
+                        <p>No completed days yet. Mark your first day to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort entries by date (newest first)
+            const sortedEntries = [...entries].sort((a, b) => {
+                return new Date(b) - new Date(a);
+            });
+            
+            let entriesHtml = '';
+            
+            sortedEntries.forEach(date => {
+                const entryDate = new Date(date);
+                const formattedDate = entryDate.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                const isToday = date === todayStr;
+                
+                entriesHtml += `
+                    <div class="entry-item">
+                        <div>${formattedDate}${isToday ? ' <span class="goal-met">(Today)</span>' : ''}</div>
+                        <div class="actions">
+                            <button class="btn-danger delete-btn" data-date="${date}"><i class="fas fa-trash"></i> Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            entriesContainer.innerHTML = entriesHtml;
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const date = e.target.closest('.delete-btn').dataset.date;
+                    removeEntry(date);
+                    renderEntries();
+                    renderCalendar();
+                    updateStats();
+                    updateTodayStatus();
+                });
+            });
+        }
+
+        // Render calendar
+        function renderCalendar() {
+            // Get first day of month
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            // Get last day of month
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            
+            // Update calendar title
+            document.querySelector('.calendar-header h2').innerHTML = `
+                <i class="fas fa-calendar-alt"></i> ${firstDay.toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    year: 'numeric' 
+                })}
+            `;
+            
+            // Clear calendar
+            calendarDays.innerHTML = '';
+            
+            // Get day of week for first day (0 = Sunday, 1 = Monday, etc)
+            let firstDayOfWeek = firstDay.getDay();
+            
+            // Add empty cells for days before the first day
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                calendarDays.appendChild(emptyDay);
+            }
+            
+            // Add cells for each day of the month
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                
+                // Format date as YYYY-MM-DD
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const isCompleted = entries.includes(dateStr);
+                const isToday = dateStr === todayStr;
+                
+                if (isCompleted) day.classList.add('completed');
+                if (isToday) day.classList.add('today');
+                
+                day.innerHTML = `
+                    <div class="day-number">${i}</div>
+                    ${isCompleted ? '<i class="fas fa-check"></i>' : ''}
+                `;
+                
+                day.addEventListener('click', () => {
+                    if (isCompleted) {
+                        removeEntry(dateStr);
+                    } else {
+                        addEntry(dateStr);
+                    }
+                    renderCalendar();
+                    renderEntries();
+                    updateStats();
+                    updateTodayStatus();
+                });
+                
+                calendarDays.appendChild(day);
+            }
+        }
+
+        // Calculate streak correctly
+        function calculateStreak() {
+            if (entries.length === 0) return 0;
+            
+            // Sort entries chronologically
+            const sortedEntries = [...entries].sort();
+            let streak = 0;
+            let currentDate = new Date();
+            
+            // Start from today and go backward
+            while (true) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                
+                if (sortedEntries.includes(dateStr)) {
+                    streak++;
+                } else {
+                    // Stop at the first gap
+                    break;
+                }
+                
+                // Move to the previous day
+                currentDate.setDate(currentDate.getDate() - 1);
+            }
+            
+            return streak;
+        }
+
+        // Calculate completion rate for current month
+        function calculateCompletionRate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            
+            // Get number of days in current month
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Count completed days in current month
+            const completedThisMonth = entries.filter(date => {
+                const d = new Date(date);
+                return d.getFullYear() === year && d.getMonth() === month;
+            }).length;
+            
+            // Calculate percentage
+            return Math.round((completedThisMonth / daysInMonth) * 100);
+        }
+
+        // Update statistics with animation
+        function updateStats() {
+            // Days goal met
+            const daysMetValue = entries.length;
+            daysMet.textContent = daysMetValue;
+            daysMet.classList.add('updated');
+            setTimeout(() => daysMet.classList.remove('updated'), 500);
+            
+            // Current streak
+            const streak = calculateStreak();
+            currentStreak.textContent = streak;
+            currentStreak.classList.add('updated');
+            setTimeout(() => currentStreak.classList.remove('updated'), 500);
+            
+            // Completion rate
+            const rate = calculateCompletionRate();
+            const rateText = `${rate}%`;
+            completionRate.textContent = rateText;
+            completionRate.classList.add('updated');
+            setTimeout(() => completionRate.classList.remove('updated'), 500);
+        }
+
+        // Initialize the app
+        function init() {
+            // Set today's date as default for the date picker
+            markDate.valueAsDate = today;
+            
+            updateTodayStatus();
+            renderEntries();
+            renderCalendar();
+            updateStats();
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
